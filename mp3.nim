@@ -1,19 +1,28 @@
 import random,tables,strformat,strutils,osproc,os
 import log
-#import sdl2
-#import sdl2/mixer
+import sdl2
+import sdl2/mixer
 
 
 #freeMusic(musica)
 #closeAudio()
 #sdl2.quit()
-#discard playMusic(musica, 0)   # 0 = toca uma vez, -1 = em loop
-#discard volumeMusic(96)        # 0 a 128
+
+        # 0 a 128
 #if musica.isNil:
  # echo "Falha ao carregar o MP3: " & $getError()
  # discard readLine(stdin)
-#let musica = loadMUS("")
-echo "Comandos: p = pausar, r = retomar, s = parar, q = sair"
+var 
+  categorias = {
+    "geek": newSeq[string](),
+    "rock": newSeq[string](),
+    "japa": newSeq[string](),
+    "diferentes": newSeq[string](),
+    "O Grilo": newSeq[string]()
+   }.toTable()
+   
+let path = "D:/musica/no_celular"
+
 #while true:
  # case stdin.readLine()
  # of "p": pauseMusic()
@@ -21,18 +30,19 @@ echo "Comandos: p = pausar, r = retomar, s = parar, q = sair"
  # of "s": discard haltMusic()
  # of "q": break
  # else: discard
-#proc ligar()=
-  #if sdl2.init(INIT_AUDIO) != SdlSuccess:
-   # echo "Falha ao iniciar SDL: " & $getError()
-   # discard readLine(stdin)
+
+if sdl2.init(INIT_AUDIO) != SdlSuccess:
+  echo "Falha ao iniciar SDL: " & $getError()
+  discard readLine(stdin)
  # 44100 Hz, formato padrão, estéreo, buffer de 2048
-  #if openAudio(44100, AUDIO_S16LSB, 2, 2048) != 0:
-   # echo "Falha ao abrir o áudio: " & $getError()
-   # discard readLine(stdin)
+if openAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) != 0:
+  echo "Falha ao abrir o áudio: " & $getError()
+  discard readLine(stdin)
+discard volumeMusic(96)
 
 template loop_categorias(codigo: untyped) {.dirty.}=
-      for genero_musical,lista_artistas in categorias:
-        for artista_comparado in lista_artistas:
+      for genero_musical in categorias.keys:
+        for artista_comparado in categorias[genero_musical]:
           codigo
     
 template loop_path(caminho:string,codigo: untyped) {.dirty.}=
@@ -41,16 +51,13 @@ template loop_path(caminho:string,codigo: untyped) {.dirty.}=
           let nome_arquivo = extractFilename(arquivo)
           codigo
 
-var 
-  categorias = {
-    "geek": newSeq[string](),
-    "rock": newSeq[string](),
-    "japa": newSeq[string](),
-    "diferentes": newSeq[string](),
-    "O Grilo": newSeq[string]()
-  }.toTable()
-  
-let path = "D:/musica/no_celular"
+
+#let musica = loadMUS("D:/MUSICA/no_celular/geek/Gabriza/Gabriza - Tempestade Sombria.mp3")
+#discard playMusic(musica, 0)   # 0 = toca uma vez, -1 = em loop
+#sleep(10000)
+#discard haltMusic()
+
+
 
 proc tabelar()=
   for i in categorias.keys:
@@ -68,10 +75,34 @@ proc listar()=
     for j in categorias[i]:
       echo "--" & j
   
-listar()
 proc tocar_solo()=
-  discard
+  echo "artista"
+  let artista = readLine(stdin)
+  echo "musica"
+  let musica = readLine(stdin)
+  var escolhido_artista = false
+  var escolhido_musica = false
+  loop_categorias:
+    if (artista.toLower() in artista_comparado.toLower()) and (not escolhido_artista):
+      escolhido_artista = true
+      echo "\n" & artista_comparado
+      loop_path(path/genero_musical/artista_comparado):
+        if (musica.toLower() in nome_arquivo.toLower()) and (not escolhido_musica):  
+          escolhido_musica = true
+          echo nome_arquivo
+          discard playMusic(loadMUS(arquivo), 0)
+          while (playingMusic() != 0):
+            stdout.write('.')
+            sleep(2000)
+            stdout.write('.')
+            sleep(2000)
+            stdout.write('.')
+            sleep(2000)
+            stdout.write("\r\27[2K") #\r — volta o cursor para o início da linha. \27[2K — apaga a linha inteira. flushFile() — força a atualização do terminal.
+            stdout.flushFile() #stdout.write("\27[5D"). Move o cursor 5 posições para trás. stdout.write("\27[5P") Apaga 5 caracteres          
+            sleep(2000)
+
 proc tocar_playlist()=
   discard
-
+tocar_solo()
 discard readLine(stdin)
