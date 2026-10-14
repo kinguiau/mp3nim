@@ -3,7 +3,8 @@ import log
 import sdl2
 import sdl2/mixer
 
-
+randomize()
+var aleat = true
 #freeMusic(musica)
 #closeAudio()
 #sdl2.quit()
@@ -103,6 +104,35 @@ proc tocar_solo()=
             sleep(2000)
 
 proc tocar_playlist()=
-  discard
-tocar_solo()
+  let escolhido_artista = readLine(stdin)
+  var genero: string
+  var artista: string
+  var playlist:seq[string]= @[]
+  var atual: string
+  loop_categorias:
+    if escolhido_artista.toLower() in artista_comparado.toLower():
+      genero = genero_musical
+      artista = artista_comparado
+  if aleat:  
+    loop_path(path/genero/artista):
+      if (playingMusic()==0):      
+        echo "000"
+        loop_path(path/genero/artista):
+          if nome_arquivo notin playlist:
+            playlist.add(arquivo)
+
+        atual = playlist.sample()
+        echo atual
+        discard playMusic(loadMUS(atual),0)
+          #echo lastPathPart(atual)
+        while (playingMusic()!=0):
+          sleep(1000)
+  elif not aleat:
+    echo "111"
+    loop_path(path/genero/artista):
+      discard playMusic(loadMUS(arquivo),0)
+      while (playingMusic()!=0):
+        sleep(1000)    
+#tocar_solo()
+tocar_playlist()
 discard readLine(stdin)
