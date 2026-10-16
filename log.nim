@@ -21,4 +21,3 @@ proc add_event*(nome,evento:string)=
  let horas = now().format("yyyy/MM/dd HH:mm:ss")
  logs["registros"].add(%fmt"{horas}, {evento}")
  writeFile(getCurrentDir()/fmt"{nome}.json",logs.pretty())
- 

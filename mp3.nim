@@ -4,15 +4,9 @@ import sdl2
 import sdl2/mixer
 
 randomize()
-var aleat = true
+var aleat = true        
 
-#closeAudio()
-#sdl2.quit()
 
-        # 0 a 128
-#if musica.isNil:
- # echo "Falha ao carregar o MP3: " & $getError()
- # discard readLine(stdin)
 var 
   categorias = {
     "geek": newSeq[string](),
@@ -21,16 +15,11 @@ var
     "diferentes": newSeq[string](),
     "O Grilo": newSeq[string]()
    }.toTable()
-   
+
+
+
 let path = "D:/musica/no_celular"
 
-#while true:
- # case stdin.readLine()
- # of "p": pauseMusic()
- # of "r": resumeMusic()
- # of "s": discard haltMusic()
- # of "q": break
- # else: discard
 
 if sdl2.init(INIT_AUDIO) != SdlSuccess:
   echo "Falha ao iniciar SDL: " & $getError()
@@ -39,7 +28,7 @@ if sdl2.init(INIT_AUDIO) != SdlSuccess:
 if openAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) != 0:
   echo "Falha ao abrir o áudio: " & $getError()
   discard readLine(stdin)
-discard volumeMusic(96)
+discard volumeMusic(96) # 0 a 128
 
 template loop_categorias(codigo: untyped) {.dirty.}=
       for genero_musical in categorias.keys:
@@ -53,10 +42,7 @@ template loop_path(caminho:string,codigo: untyped) {.dirty.}=
           codigo
 
 
-#let musica = loadMUS("D:/MUSICA/no_celular/geek/Gabriza/Gabriza - Tempestade Sombria.mp3")
 #discard playMusic(musica, 0)   # 0 = toca uma vez, -1 = em loop
-#sleep(10000)
-#discard haltMusic()
 
 
 
@@ -70,6 +56,12 @@ tabelar()
 for i in categorias.keys:
   echo i,categorias[i]
 
+echo """
+comandos:
+  playlist
+  tocar
+  aleat"""
+  
 proc listar()=
   for i in categorias.keys:
     echo i & ": \n"
@@ -110,6 +102,7 @@ proc tocar_solo()=
             
             
 proc tocar_playlist()=
+  echo "artista"
   let escolhido_artista = readLine(stdin)
   var genero: string
   var artista: string
@@ -130,10 +123,9 @@ proc tocar_playlist()=
       if (playingMusic()==0):      
         echo "000"
 
-        echo playlist.len()
+        #echo playlist.len()
 
         atual = playlist.sample()
-        echo atual
 
         discard playMusic(loadMUS(atual),0)
 
@@ -147,14 +139,13 @@ proc tocar_playlist()=
   elif not aleat:
     echo "111"
     loop_path(path/genero/artista):
-
-      discard playMusic(loadMUS(arquivo),0)
-
+      if arquivo notin playlist:
+        playlist.add(arquivo)
+    for i in playlist:    
+      discard playMusic(loadMUS(i),0)
       while (playingMusic()!=0):
        sleep(1000) 
       
-#tocar_solo()
-#tocar_playlist()
 
 while true:
   echo "<----------------->"
@@ -165,4 +156,19 @@ while true:
     tocar_playlist()
   elif texto=="aleat":
     aleat = not aleat
-    
+
+
+
+closeAudio()
+sdl2.quit()
+
+#while true:
+ # case stdin.readLine()
+ # of "p": pauseMusic()
+ # of "r": resumeMusic()
+ # of "s": discard haltMusic()
+ # of "q": break
+ # else: discard
+#if musica.isNil:
+  # echo "Falha ao carregar o MP3: " & $getError()
+  # discard readLine(stdin)
