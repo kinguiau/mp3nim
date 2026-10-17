@@ -1,12 +1,10 @@
 import random,tables,strformat,strutils,osproc,os
-import log
 import sdl2
 import sdl2/mixer
 
 randomize()
-var aleat = true        
 
-
+         
 var 
   categorias = {
     "geek": newSeq[string](),
@@ -14,8 +12,8 @@ var
     "japa": newSeq[string](),
     "diferentes": newSeq[string](),
     "O Grilo": newSeq[string]()
-   }.toTable()
-
+  }.toTable()
+  aleat = true
 
 
 let path = "D:/musica/no_celular"
@@ -25,6 +23,7 @@ if sdl2.init(INIT_AUDIO) != SdlSuccess:
   echo "Falha ao iniciar SDL: " & $getError()
   discard readLine(stdin)
  # 44100 Hz, formato padrão, estéreo, buffer de 2048
+
 if openAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) != 0:
   echo "Falha ao abrir o áudio: " & $getError()
   discard readLine(stdin)
@@ -42,10 +41,6 @@ template loop_path(caminho:string,codigo: untyped) {.dirty.}=
           codigo
 
 
-#discard playMusic(musica, 0)   # 0 = toca uma vez, -1 = em loop
-
-
-
 proc tabelar()=
   for i in categorias.keys:
     for tipo,arquivo in walkDir(path/i):
@@ -60,7 +55,8 @@ echo """
 comandos:
   playlist
   tocar
-  aleat"""
+  aleat
+  listar"""
   
 proc listar()=
   for i in categorias.keys:
@@ -73,25 +69,23 @@ proc tocar_solo()=
   let artista = readLine(stdin)
   echo "musica"
   let musica = readLine(stdin)
-  var escolhido_artista = false
-  var escolhido_musica = false
+  var 
+    escolhido_artista = false
+    escolhido_musica = false
 
   loop_categorias:
     if (artista.toLower() in artista_comparado.toLower()) and (not escolhido_artista):
       escolhido_artista = true
-
       echo "\n" & artista_comparado
     
       loop_path(path/genero_musical/artista_comparado):
-    
         if (musica.toLower() in nome_arquivo.toLower()) and (not escolhido_musica):  
           escolhido_musica = true
           echo nome_arquivo
        
-          discard playMusic(loadMUS(arquivo), 0)
+          discard playMusic(loadMUS(arquivo), 0) # 0 = toca uma vez, -1 = em loop
        
           while (playingMusic() != 0):
-
             for i in 1..3:
               stdout.write('.')
               sleep(2000)
@@ -104,10 +98,11 @@ proc tocar_solo()=
 proc tocar_playlist()=
   echo "artista"
   let escolhido_artista = readLine(stdin)
-  var genero: string
-  var artista: string
-  var playlist:seq[string]= @[]
-  var atual: string
+  var 
+    genero: string
+    artista: string
+    playlist:seq[string]= @[]
+    atual: string
 
   loop_categorias:
     if escolhido_artista.toLower() in artista_comparado.toLower():
@@ -150,12 +145,14 @@ proc tocar_playlist()=
 while true:
   echo "<----------------->"
   var texto = readLine(stdin)
-  if texto=="tocar":
+  if texto == "tocar":
     tocar_solo()
-  elif texto=="playlist":
+  elif texto == "playlist":
     tocar_playlist()
-  elif texto=="aleat":
+  elif texto == "aleat":
     aleat = not aleat
+  elif texto == "listar":
+    listar()
 
 
 
