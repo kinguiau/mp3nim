@@ -1,21 +1,22 @@
-import random,tables,strformat,strutils,os
+import random,tables,strformat,strutils,os,json
 import sdl2,sdl2/mixer
 
 randomize()
 
-         
+#if "mp3.json"
+let json_info = parseJson(readFile("mp3.json"))
+
+
+
 var 
-  categorias = {
-    "geek": newSeq[string](),
-    "rock": newSeq[string](),
-    "japa": newSeq[string](),
-    "diferentes": newSeq[string](),
-    "O Grilo": newSeq[string]()
-  }.toTable()
+  categorias=initTable[string, seq[string]]()
   aleat = true
 
+for i in json_info["categorias"]:
+  categorias[i.getStr()] = newSeq[string]()
 
-let path = "D:/musica/no_celular"
+
+let path = getStr(json_info["path"]) 
 
 
 if sdl2.init(INIT_AUDIO) != SdlSuccess:
