@@ -1,6 +1,5 @@
-import random,tables,strformat,strutils,osproc,os
-import sdl2
-import sdl2/mixer
+import random,tables,strformat,strutils,os
+import sdl2,sdl2/mixer
 
 randomize()
 
@@ -37,7 +36,7 @@ template loop_categorias(codigo: untyped) {.dirty.}=
 template loop_path(caminho:string,codigo: untyped) {.dirty.}=
       for tipo,arquivo in walkDir(caminho):
         if tipo==pcFile:
-          let nome_arquivo = extractFilename(arquivo)
+          
           codigo
 
 
@@ -79,11 +78,12 @@ proc tocar_solo()=
       echo "\n" & artista_comparado
     
       loop_path(path/genero_musical/artista_comparado):
+        let nome_arquivo = extractFilename(arquivo)
         if (musica.toLower() in nome_arquivo.toLower()) and (not escolhido_musica):  
           escolhido_musica = true
           echo nome_arquivo
        
-          discard playMusic(loadMUS(arquivo), 0) # 0 = toca uma vez, -1 = em loop
+          discard playMusic(loadMUS(arquivo.cstring()), 0) # 0 = toca uma vez, -1 = em loop
        
           while (playingMusic() != 0):
             for i in 1..3:
@@ -114,7 +114,7 @@ proc tocar_playlist()=
       if arquivo notin playlist:
         playlist.add(arquivo)
 
-    loop_path(path/genero/artista):
+    for i in 0..playlist.len():
       if (playingMusic()==0):      
         echo "000"
 
@@ -122,7 +122,7 @@ proc tocar_playlist()=
 
         atual = playlist.sample()
 
-        discard playMusic(loadMUS(atual),0)
+        discard playMusic(loadMUS(atual.cstring()),0)
 
         echo lastPathPart(atual)
 
@@ -137,10 +137,11 @@ proc tocar_playlist()=
       if arquivo notin playlist:
         playlist.add(arquivo)
     for i in playlist:    
-      discard playMusic(loadMUS(i),0)
+      discard playMusic(loadMUS(i.cstring()),0)
       while (playingMusic()!=0):
        sleep(1000) 
-      
+
+
 
 while true:
   echo "<----------------->"
