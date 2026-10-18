@@ -3,7 +3,11 @@ import sdl2,sdl2/mixer
 
 randomize()
 
-#if "mp3.json"
+if not fileExists("mp3.json"):
+  writeFile(getCurrentDir()/"mp3.json",$(%*{"categorias":[], "path":""}))
+
+
+
 let json_info = parseJson(readFile("mp3.json"))
 
 
@@ -37,7 +41,6 @@ template loop_categorias(codigo: untyped) {.dirty.}=
 template loop_path(caminho:string,codigo: untyped) {.dirty.}=
       for tipo,arquivo in walkDir(caminho):
         if tipo==pcFile:
-          
           codigo
 
 
