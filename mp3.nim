@@ -114,17 +114,13 @@ proc tocar_playlist()=
     if escolhido_artista.toLower() in artista_comparado.toLower():
       genero = genero_musical
       artista = artista_comparado
-
-  if aleat:  
-    loop_path(path/genero/artista):
-      if arquivo notin playlist:
+  loop_path(path/genero/artista):    
+    if arquivo notin playlist:
         playlist.add(arquivo)
-
+  if aleat:  
     for i in 0..playlist.len():
       if (playingMusic()==0):      
         echo "000"
-
-        #echo playlist.len()
 
         atual = playlist.sample()
         let musica = loadMUS(atual.cstring())
@@ -149,9 +145,6 @@ proc tocar_playlist()=
         
   elif not aleat:
     echo "111"
-    loop_path(path/genero/artista):
-      if arquivo notin playlist:
-        playlist.add(arquivo)
     for i in playlist:
       let musica = loadMUS(i.cstring())
       discard playMusic(musica,0)
@@ -164,7 +157,7 @@ proc tocar_playlist()=
         elif comando=="passar":
           discard haltMusic()
           freeMusic(musica)
-      sleep(1000)
+      sleep(250)
       
 
 
