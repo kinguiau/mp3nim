@@ -97,8 +97,12 @@ proc tocar_solo()=
               resumeMusic()
             elif comando=="passar":
               discard haltMusic()
+              freeMusic(musica)
+          
+             
+              
 proc tocar_playlist()=
-  echo "artista"
+  echo "artista:"
   let escolhido_artista = readLine(stdin)
   var 
     genero: string
@@ -136,8 +140,12 @@ proc tocar_playlist()=
             resumeMusic()
           elif comando=="passar":
             discard haltMusic()
-          sleep(1000)
+            freeMusic(musica)
+      
+        sleep(250)
         playlist.delete(playlist.find(atual))
+      
+      
         
   elif not aleat:
     echo "111"
@@ -155,7 +163,9 @@ proc tocar_playlist()=
           resumeMusic()
         elif comando=="passar":
           discard haltMusic()
-        sleep(1000) 
+          freeMusic(musica)
+      sleep(1000)
+      
 
 
 while true:
