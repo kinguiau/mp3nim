@@ -1,4 +1,4 @@
-import random,tables,strformat,strutils,os,json
+import random,tables,strformat,strutils,os,json,terminal
 import sdl2,sdl2/mixer
 
 randomize()
@@ -53,8 +53,8 @@ tabelar()
 
 for i in categorias.keys:
   echo i,categorias[i]
-
-echo """
+  
+styledEcho fgGreen, """
 comandos:
   playlist
   tocar
