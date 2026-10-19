@@ -86,19 +86,17 @@ proc tocar_solo()=
         if (musica.toLower() in nome_arquivo.toLower()) and (not escolhido_musica):  
           escolhido_musica = true
           echo nome_arquivo
-       
-          discard playMusic(loadMUS(arquivo.cstring()), 0) # 0 = toca uma vez, -1 = em loop
+          let musica = loadMUS(arquivo.cstring())
+          discard playMusic(musica, 0) # 0 = toca uma vez, -1 = em loop
        
           while (playingMusic() != 0):
-            for i in 1..3:
-              stdout.write('.')
-              sleep(2000)
-            
-            stdout.write("\r\27[2K") #\r — volta o cursor para o início da linha. \27[2K — apaga a linha inteira. flushFile() — força a atualização do terminal.
-            stdout.flushFile() #stdout.write("\27[5D"). Move o cursor 5 posições para trás. stdout.write("\27[5P") Apaga 5 caracteres          
-            sleep(2000)
-            
-            
+            let comando:string = readLine(stdin)
+            if comando=="pausar":
+              pauseMusic()
+            elif comando=="despausar":
+              resumeMusic()
+            elif comando=="passar":
+              discard haltMusic()
 proc tocar_playlist()=
   echo "artista"
   let escolhido_artista = readLine(stdin)
@@ -125,14 +123,20 @@ proc tocar_playlist()=
         #echo playlist.len()
 
         atual = playlist.sample()
-
-        discard playMusic(loadMUS(atual.cstring()),0)
+        let musica = loadMUS(atual.cstring())
+        discard playMusic(musica,0)
 
         echo lastPathPart(atual)
 
         while (playingMusic()!=0):
+          let comando:string = readLine(stdin)
+          if comando=="pausar":
+            pauseMusic()
+          elif comando=="despausar":
+            resumeMusic()
+          elif comando=="passar":
+            discard haltMusic()
           sleep(1000)
-        
         playlist.delete(playlist.find(atual))
         
   elif not aleat:
@@ -140,11 +144,18 @@ proc tocar_playlist()=
     loop_path(path/genero/artista):
       if arquivo notin playlist:
         playlist.add(arquivo)
-    for i in playlist:    
-      discard playMusic(loadMUS(i.cstring()),0)
+    for i in playlist:
+      let musica = loadMUS(i.cstring())
+      discard playMusic(musica,0)
       while (playingMusic()!=0):
-       sleep(1000) 
-
+        let comando:string = readLine(stdin)
+        if comando=="pausar":
+          pauseMusic()
+        elif comando=="despausar":
+          resumeMusic()
+        elif comando=="passar":
+          discard haltMusic()
+        sleep(1000) 
 
 
 while true:
@@ -164,13 +175,8 @@ while true:
 closeAudio()
 sdl2.quit()
 
-#while true:
- # case stdin.readLine()
- # of "p": pauseMusic()
- # of "r": resumeMusic()
- # of "s": discard haltMusic()
- # of "q": break
- # else: discard
+
+
 #if musica.isNil:
   # echo "Falha ao carregar o MP3: " & $getError()
   # discard readLine(stdin)
