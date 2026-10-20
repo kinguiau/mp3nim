@@ -2,12 +2,11 @@ import random,tables,strformat,strutils,os,json,terminal
 import sdl2,sdl2/mixer
 
 randomize()
+enableTrueColors()
+
 
 if not fileExists("mp3.json"):
   writeFile(getCurrentDir()/"mp3.json",$(%*{"categorias":[], "path":""}))
-
-
-
 let json_info = parseJson(readFile("mp3.json"))
 
 
@@ -15,7 +14,8 @@ let json_info = parseJson(readFile("mp3.json"))
 var 
   categorias=initTable[string, seq[string]]()
   aleat = true
-
+  volume: int = 96
+  
 for i in json_info["categorias"]:
   categorias[i.getStr()] = newSeq[string]()
 
@@ -31,7 +31,7 @@ if sdl2.init(INIT_AUDIO) != SdlSuccess:
 if openAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) != 0:
   echo "Falha ao abrir o áudio: " & $getError()
   discard readLine(stdin)
-discard volumeMusic(96) # 0 a 128
+discard volumeMusic(volume.cint()) # 0 a 128
 
 template loop_categorias(codigo: untyped) {.dirty.}=
       for genero_musical in categorias.keys:
@@ -53,25 +53,76 @@ tabelar()
 
 for i in categorias.keys:
   echo i,categorias[i]
-  
+
+proc aumentar_volume()=
+  if volume<128:
+    volume= volume + 16
+    discard volumeMusic(volume.cint())
+    echo volume
+proc diminuir_volume()=
+  if volume>0:
+    volume = volume - 16
+    discard volumeMusic(volume.cint())
+    echo volume
+    
 styledEcho fgGreen, """
 comandos:
   playlist
   tocar
   aleat
-  listar"""
+  listar
+  aumentar
+  diminuir"""
   
 proc listar()=
   for i in categorias.keys:
     echo i & ": \n"
     for j in categorias[i]:
       echo "--" & j
-  
+
+
+var comandos:Channel[string]
+comandos.open()
+
+proc leitor() {.thread.} =
+  while true:
+    var linha:string
+    try:
+      linha = readLine(stdin)
+    except EOFError:
+      linha = "sair"
+    comandos.send(linha)
+    if linha == "sair":
+      break
+var thread: Thread[void]
+createThread(thread,leitor)
+proc lerLinha(): string = comandos.recv()
+      
+proc musica_comandos() =
+  let (estavel, cmd) = comandos.tryRecv()   # não bloqueia
+  if estavel:
+    if cmd == "pausar": 
+      pauseMusic()
+    elif cmd == "despausar":
+      resumeMusic()
+    elif cmd == "passar":
+      discard haltMusic()
+    elif cmd == "aumentar":
+      aumentar_volume()
+    elif cmd == "diminuir":  
+      diminuir_volume()
+  sleep(50)
+      
+
+
+
+
+      
 proc tocar_solo()=
   echo "artista"
-  let artista = readLine(stdin)
+  let artista = lerLinha()
   echo "musica"
-  let musica = readLine(stdin)
+  let musica = lerLinha()
   var 
     escolhido_artista = false
     escolhido_musica = false
@@ -90,20 +141,12 @@ proc tocar_solo()=
           discard playMusic(musica, 0) # 0 = toca uma vez, -1 = em loop
        
           while (playingMusic() != 0):
-            let comando:string = readLine(stdin)
-            if comando=="pausar":
-              pauseMusic()
-            elif comando=="despausar":
-              resumeMusic()
-            elif comando=="passar":
-              discard haltMusic()
-              freeMusic(musica)
-          
-             
+            musica_comandos()
+            
               
 proc tocar_playlist()=
-  echo "artista:"
-  let escolhido_artista = readLine(stdin)
+  styledEcho fgYellow, "artista:"
+  let escolhido_artista = lerLinha()
   var 
     genero: string
     artista: string
@@ -120,50 +163,32 @@ proc tocar_playlist()=
   if aleat:  
     for i in 0..playlist.len():
       if (playingMusic()==0):      
+        #styledEcho fgBlue, "000"
         echo "000"
-
         atual = playlist.sample()
         let musica = loadMUS(atual.cstring())
         discard playMusic(musica,0)
 
-        echo lastPathPart(atual)
-
+        styledEcho bgGreen, fgMagenta, lastPathPart(atual)
         while (playingMusic()!=0):
-          let comando:string = readLine(stdin)
-          if comando=="pausar":
-            pauseMusic()
-          elif comando=="despausar":
-            resumeMusic()
-          elif comando=="passar":
-            discard haltMusic()
-            freeMusic(musica)
-      
+          musica_comandos()
         sleep(250)
         playlist.delete(playlist.find(atual))
-      
-      
-        
+  
   elif not aleat:
     echo "111"
     for i in playlist:
       let musica = loadMUS(i.cstring())
       discard playMusic(musica,0)
       while (playingMusic()!=0):
-        let comando:string = readLine(stdin)
-        if comando=="pausar":
-          pauseMusic()
-        elif comando=="despausar":
-          resumeMusic()
-        elif comando=="passar":
-          discard haltMusic()
-          freeMusic(musica)
+        sleep(10000)
       sleep(250)
       
-
+#tocar_playlist()
 
 while true:
   echo "<----------------->"
-  var texto = readLine(stdin)
+  var texto = lerLinha()
   if texto == "tocar":
     tocar_solo()
   elif texto == "playlist":
@@ -172,6 +197,10 @@ while true:
     aleat = not aleat
   elif texto == "listar":
     listar()
+  elif texto == "aumentar":
+    aumentar_volume()
+  elif texto == "diminuir":
+    diminuir_volume()
 
 
 
