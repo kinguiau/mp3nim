@@ -2,11 +2,11 @@ import random,tables,strformat,strutils,os,json,terminal
 import sdl2,sdl2/mixer
 
 randomize()
-enableTrueColors()
+
 
 
 if not fileExists("mp3.json"):
-  writeFile(getCurrentDir()/"mp3.json",$(%*{"categorias":[], "path":""}))
+  writeFile(getCurrentDir()/"mp3.json",$(%*{"categorias":[], "path":"","historico":[]}))
 let json_info = parseJson(readFile("mp3.json"))
 
 
@@ -97,24 +97,62 @@ proc leitor() {.thread.} =
 var thread: Thread[void]
 createThread(thread,leitor)
 proc lerLinha(): string = comandos.recv()
-      
-proc musica_comandos() =
+
+
+
+
+
+
+
+
+proc toque(atual: string)
+
+
+proc musica_comandos(musica:string) =
   let (estavel, cmd) = comandos.tryRecv()   # não bloqueia
   if estavel:
     if cmd == "pausar": 
       pauseMusic()
     elif cmd == "despausar":
       resumeMusic()
-    elif cmd == "passar":
-      discard haltMusic()
+    
     elif cmd == "aumentar":
       aumentar_volume()
     elif cmd == "diminuir":  
       diminuir_volume()
+    elif cmd == "passar":
+      discard haltMusic()
+      echo "333"
+      
+    elif cmd == "anterior":
+      discard haltMusic()
+      var id = 0
+      for i in countdown(json_info["historico"].len()-1,0):
+        if getStr(json_info["historico"][i]) == musica:
+          id = i
+          break
+      let cancao = getStr(json_info["historico"][id-1])
+      echo "222"
+      toque(cancao)
   sleep(50)
       
 
 
+
+  
+
+proc toque(atual:string)=
+  styledEcho fgMagenta, lastPathPart(atual)
+  let musica = loadMUS(atual.cstring())
+  json_info["historico"].add(%atual)
+  discard playMusic(musica,0) # 0 = toca uma vez, -1 = em loop
+  while (playingMusic()!=0):
+    musica_comandos(atual)
+  writeFile(getCurrentDir()/"mp3.json",json_info.pretty())
+  sleep(250)
+
+
+  
 
 
       
@@ -136,13 +174,8 @@ proc tocar_solo()=
         let nome_arquivo = extractFilename(arquivo)
         if (musica.toLower() in nome_arquivo.toLower()) and (not escolhido_musica):  
           escolhido_musica = true
-          echo nome_arquivo
-          let musica = loadMUS(arquivo.cstring())
-          discard playMusic(musica, 0) # 0 = toca uma vez, -1 = em loop
-       
-          while (playingMusic() != 0):
-            musica_comandos()
-            
+          toque(arquivo)
+                      
               
 proc tocar_playlist()=
   styledEcho fgYellow, "artista:"
@@ -166,22 +199,17 @@ proc tocar_playlist()=
         #styledEcho fgBlue, "000"
         echo "000"
         atual = playlist.sample()
-        let musica = loadMUS(atual.cstring())
-        discard playMusic(musica,0)
-
-        styledEcho bgGreen, fgMagenta, lastPathPart(atual)
-        while (playingMusic()!=0):
-          musica_comandos()
-        sleep(250)
+        toque(atual)
         playlist.delete(playlist.find(atual))
+
+        
+        
+       
   
   elif not aleat:
     echo "111"
     for i in playlist:
-      let musica = loadMUS(i.cstring())
-      discard playMusic(musica,0)
-      while (playingMusic()!=0):
-        sleep(10000)
+      toque(i)
       sleep(250)
       
 #tocar_playlist()

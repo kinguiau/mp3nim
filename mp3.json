@@ -1,4 +1,29 @@
 {
-  "categorias":["rock","geek","diferentes","japa","O Grilo"],
-  "path":"D:/musica/no_celular"
+  "categorias": [
+    "rock",
+    "geek",
+    "diferentes",
+    "japa",
+    "O Grilo"
+  ],
+  "path": "D:/musica/no_celular",
+  "historico": [
+    "D:\\musica\\no_celular\\geek\\VMZ\\VMZ - OniChan.mp3",
+    "D:\\musica\\no_celular\\geek\\VMZ\\VMZ - O Pequeno Príncipe.mp3",
+    "D:\\musica\\no_celular\\geek\\VMZ\\VMZ - Euforia.mp3",
+    "D:\\musica\\no_celular\\geek\\VMZ\\VMZ - Até A Próxima.mp3",
+    "D:\\musica\\no_celular\\desktop.ini",
+    "D:\\musica\\no_celular\\geek\\VMZ\\VMZ - Master Chef.mp3",
+    "D:\\musica\\no_celular\\geek\\VMZ\\Sadstation - A Prova de Balas.mp3",
+    "D:\\musica\\no_celular\\geek\\VMZ\\Sadstation - Longe de Casa.mp3",
+    "D:\\musica\\no_celular\\geek\\VMZ\\VMZ - Rascunho Bendy.mp3",
+    "D:\\musica\\no_celular\\geek\\VMZ\\VMZ - Terra.mp3",
+    "D:\\musica\\no_celular\\geek\\VMZ\\VMZ - Dimensões.mp3",
+    "D:\\musica\\no_celular\\geek\\VMZ\\VMZ - Domingo à Noite.mp3",
+    "D:\\musica\\no_celular\\geek\\VMZ\\VMZ - Euforia.mp3",
+    "D:\\musica\\no_celular\\geek\\VMZ\\VMZ - O Pequeno Príncipe.mp3",
+    "D:\\musica\\no_celular\\geek\\VMZ\\VMZ - Luzes no Céu.mp3",
+    "D:\\musica\\no_celular\\geek\\VMZ\\VMZ - O Pequeno Príncipe.mp3",
+    "D:\\musica\\no_celular\\geek\\VMZ\\VMZ - Luzes no Céu.mp3"
+  ]
 }
