@@ -72,7 +72,10 @@ comandos:
   aleat
   listar
   aumentar
-  diminuir"""
+  diminuir
+  voltar
+  passar
+  sair"""
   
 proc listar()=
   for i in categorias.keys:
@@ -103,53 +106,103 @@ proc lerLinha(): string = comandos.recv()
 
 
 
+#se json_info[][i] == historico[i]
+# se i<historico.len() - 1
 
-
-proc toque(atual: string)
+proc toque(atual: string,salvar:bool)
+var historico = newSeq[string]()
+for i in 0..(json_info["historico"].len()-1):
+    historico.add(getStr(json_info["historico"][i]))
+var 
+  id = historico.len() - 1 
+  passadas: int = 0
+  no_limite = false
 
 
 proc musica_comandos(musica:string) =
+  
   let (estavel, cmd) = comandos.tryRecv()   # não bloqueia
   if estavel:
-    if cmd == "pausar": 
+    if cmd == "sair":
+      system.quit()
+    elif cmd == "pausar": 
       pauseMusic()
     elif cmd == "despausar":
       resumeMusic()
-    
     elif cmd == "aumentar":
       aumentar_volume()
     elif cmd == "diminuir":  
       diminuir_volume()
     elif cmd == "passar":
-      discard haltMusic()
-      echo "333"
+      if passadas <= 0:
+        echo "limite"
+        discard haltMusic()
+      else:
+        for i in (historico.len())..(json_info["historico"].len() - 1):
+          historico.add(getStr(json_info["historico"][i]))
+
+        discard haltMusic()
+        passadas-=1  
+
+        echo fmt"{passadas}, {id}"
+
+        let cancao = historico[(id - passadas)]  
+
+        echo "333"
+
+        toque(cancao,false)
+
+    elif cmd == "voltar":
+      echo fmt"{id},{passadas}"
+      for i in historico.len()..(json_info["historico"].len() - 1):
+        historico.add(getStr(json_info["historico"][i]))
+      if (id - passadas) > 0:
+        passadas+=1
+      id = historico.len() - 1
+      let cancao = historico[(id - passadas)]
+      echo cancao
       
-    elif cmd == "anterior":
-      discard haltMusic()
-      var id = 0
-      for i in countdown(json_info["historico"].len()-1,0):
-        if getStr(json_info["historico"][i]) == musica:
-          id = i
-          break
-      let cancao = getStr(json_info["historico"][id-1])
       echo "222"
-      toque(cancao)
-  sleep(50)
+      if (id - passadas) >= 0:
+        if (id - passadas)==0 and no_limite:
+          echo "limite"
+        else:
+          if (id - passadas)==0:
+            no_limite = true
+          discard haltMusic()
+          toque(cancao,false)    
+  sleep(50)        
+        
+      
+
+      
+      
+        
+      
+
+      
+
+      
       
 
 
 
   
 
-proc toque(atual:string)=
+proc toque(atual:string,salvar:bool)=
   styledEcho fgMagenta, lastPathPart(atual)
+
   let musica = loadMUS(atual.cstring())
-  json_info["historico"].add(%atual)
   discard playMusic(musica,0) # 0 = toca uma vez, -1 = em loop
+  if salvar:
+    json_info["historico"].add(%atual)
+    writeFile(getCurrentDir()/"mp3.json",json_info.pretty())
+  
+
   while (playingMusic()!=0):
     musica_comandos(atual)
-  writeFile(getCurrentDir()/"mp3.json",json_info.pretty())
-  sleep(250)
+  
+  
 
 
   
@@ -174,12 +227,12 @@ proc tocar_solo()=
         let nome_arquivo = extractFilename(arquivo)
         if (musica.toLower() in nome_arquivo.toLower()) and (not escolhido_musica):  
           escolhido_musica = true
-          toque(arquivo)
+          toque(arquivo,true)
                       
               
-proc tocar_playlist()=
-  styledEcho fgYellow, "artista:"
-  let escolhido_artista = lerLinha()
+proc tocar_playlist(vmz:string)=
+  styledEcho fgYellow, fmt"artista:{vmz}"
+  let escolhido_artista = vmz
   var 
     genero: string
     artista: string
@@ -199,7 +252,8 @@ proc tocar_playlist()=
         #styledEcho fgBlue, "000"
         echo "000"
         atual = playlist.sample()
-        toque(atual)
+        toque(atual,true)
+        
         playlist.delete(playlist.find(atual))
 
         
@@ -209,10 +263,10 @@ proc tocar_playlist()=
   elif not aleat:
     echo "111"
     for i in playlist:
-      toque(i)
+      toque(i,true)
       sleep(250)
       
-#tocar_playlist()
+tocar_playlist("vmz")
 
 while true:
   echo "<----------------->"
@@ -220,7 +274,7 @@ while true:
   if texto == "tocar":
     tocar_solo()
   elif texto == "playlist":
-    tocar_playlist()
+    tocar_playlist("fds")
   elif texto == "aleat":
     aleat = not aleat
   elif texto == "listar":
