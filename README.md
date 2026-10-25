@@ -6,37 +6,58 @@ Um player de música MP3 de linha de comando escrito em [Nim](https://nim-lang.o
 
 ## 📋 Funcionalidades
 
-- Organização de músicas por **gênero/categoria** (geek, rock, japa, diferentes, O Grilo)
+- Organização de músicas por **gênero/categoria** configurável via `mp3.json`
 - **Busca por artista** com correspondência parcial (case-insensitive)
 - Reprodução de uma **música específica** por nome parcial
 - Reprodução de **playlist completa** de um artista
 - Modo **aleatório** (shuffle) ativável/desativável em tempo real
+- **Controle de volume** em tempo real (aumentar/diminuir)
+- **Pausar e despausar** a música atual
+- **Navegar pelo histórico** — voltar e avançar músicas já tocadas
+- **Listar** todos os artistas por categoria
+- **Histórico persistente** de reprodução salvo no `mp3.json`
 - **Log de eventos** em arquivo JSON com timestamp
 
 ---
 
 ## 🗂️ Estrutura esperada de pastas
 
-O programa espera que as músicas estejam organizadas no seguinte formato:
+O programa espera que as músicas estejam organizadas da seguinte forma:
 
 ```
-D:/musica/no_celular/
-├── geek/
+<path configurado no mp3.json>/
+├── genero1/
 │   ├── NomeArtista1/
 │   │   ├── musica1.mp3
 │   │   └── musica2.mp3
 │   └── NomeArtista2/
-├── rock/
+├── genero2/
 │   └── ...
-├── japa/
-│   └── ...
-├── diferentes/
-│   └── ...
-└── O Grilo/
+└── genero3/
     └── ...
 ```
 
-> **Nota:** O caminho base está definido no código como `D:/musica/no_celular`. Para mudar, edite a variável `path` em `mp3.nim`.
+Os gêneros/categorias são definidos no arquivo `mp3.json`.
+
+---
+
+## ⚙️ Configuração — mp3.json
+
+Antes de usar, configure o arquivo `mp3.json` na raiz do projeto:
+
+```json
+{
+  "categorias": ["rock", "japa", "geek"],
+  "path": "D:/musica/no_celular",
+  "historico": []
+}
+```
+
+| Campo | Descrição |
+|---|---|
+| `categorias` | Lista de subpastas/gêneros dentro do `path` |
+| `path` | Caminho base onde estão as pastas de gêneros |
+| `historico` | Histórico de músicas tocadas (gerenciado automaticamente) |
 
 ---
 
@@ -79,15 +100,43 @@ Execute o programa compilado:
 ./mp3.exe
 ```
 
-Ao iniciar, o programa carrega a biblioteca de músicas e exibe os artistas por categoria. Em seguida, aguarda comandos no terminal:
+Ao iniciar, o programa carrega a biblioteca de músicas a partir do `mp3.json` e exibe os artistas por categoria. Em seguida, aguarda comandos no terminal.
+
+---
+
+## 🎮 Comandos
+
+### Comandos do menu principal
 
 | Comando | Descrição |
 |---|---|
 | `tocar` | Busca um artista e toca uma música específica |
 | `playlist` | Busca um artista e toca todas as suas músicas |
-| `aleat` | Alterna o modo aleatório (shuffle) ligado/desligado |
+| `aleatorio` | Alterna o modo aleatório (shuffle) ligado/desligado |
+| `listar` | Lista todos os artistas organizados por categoria |
+| `aumentar` | Aumenta o volume em 16 unidades (máx. 128) |
+| `diminuir` | Diminui o volume em 16 unidades (mín. 0) |
+| `sair` | Encerra o programa |
 
-### Exemplo de uso — tocar uma música
+### Comandos durante a reprodução
+
+Estes comandos funcionam enquanto uma música está tocando:
+
+| Comando | Descrição |
+|---|---|
+| `pausar` | Pausa a música atual |
+| `despausar` | Retoma a música pausada |
+| `passar` | Avança para a próxima música no histórico |
+| `voltar` | Volta para a música anterior no histórico |
+| `aumentar` | Aumenta o volume |
+| `diminuir` | Diminui o volume |
+| `sair` | Para a reprodução e encerra o programa |
+
+---
+
+## 📖 Exemplos de uso
+
+### Tocar uma música específica
 
 ```
 <----------------->
@@ -98,9 +147,9 @@ musica
 master
 ```
 
-O programa busca qualquer artista que contenha "metallica" e qualquer arquivo que contenha "master" no nome, e inicia a reprodução.
+Busca qualquer artista que contenha "metallica" e qualquer arquivo que contenha "master" no nome, e inicia a reprodução.
 
-### Exemplo de uso — playlist aleatória
+### Tocar playlist de um artista
 
 ```
 <----------------->
@@ -108,7 +157,25 @@ playlist
 pink floyd
 ```
 
-Toca todas as músicas do artista encontrado em ordem aleatória (se `aleat` estiver ativo).
+Toca todas as músicas do artista encontrado. Se o modo aleatório estiver ativo, a ordem é embaralhada.
+
+### Listar artistas
+
+```
+<----------------->
+listar
+```
+
+Exibe todos os artistas agrupados por categoria/gênero.
+
+### Controlar volume
+
+```
+<----------------->
+aumentar
+```
+
+Aumenta o volume atual em 16 unidades e exibe o valor novo.
 
 ---
 
@@ -118,6 +185,7 @@ Toca todas as músicas do artista encontrado em ordem aleatória (se `aleat` est
 |---|---|
 | `mp3.nim` | Código principal do player |
 | `log.nim` | Módulo de logging em JSON |
+| `mp3.json` | Configuração de categorias, caminho e histórico |
 | `mp3.exe` | Executável compilado para Windows |
 | `log.exe` | Executável do módulo de log |
 | `SDL2.dll` | Biblioteca SDL2 para Windows |
@@ -127,10 +195,10 @@ Toca todas as músicas do artista encontrado em ordem aleatória (se `aleat` est
 
 ## 📝 Módulo de Log (`log.nim`)
 
-O módulo `log.nim` oferece duas funções para registrar eventos em um arquivo JSON:
+O módulo `log.nim` registra eventos automaticamente durante o uso do player em um arquivo JSON:
 
 ```nim
-log_arq("nome_do_log")          # Cria o arquivo de log se não existir
+log_arq("nome_do_log")                      # Cria o arquivo de log se não existir
 add_event("nome_do_log", "evento ocorreu")  # Adiciona um evento com timestamp
 ```
 
@@ -139,26 +207,27 @@ O arquivo gerado tem o formato:
 ```json
 {
   "registros": [
-    "2026/10/16 14:32:00, evento ocorreu"
+    "2026/10/16 14:32:00, iniciar",
+    "2026/10/16 14:32:05, tocando Master of Puppets.mp3",
+    "2026/10/16 14:35:12, passar, música atual: Fade to Black.mp3"
   ]
 }
 ```
 
+Eventos registrados automaticamente: iniciar, tabelar, tocar, playlist, passar, voltar, pausar, despausar, aumentar/diminuir volume, listar e sair.
+
 ---
 
-## ⚙️ Configuração
+## ⚙️ Ajustes no código
 
-Para adaptar o programa ao seu ambiente, edite `mp3.nim`:
+Para modificar comportamentos padrão, edite `mp3.nim`:
 
 ```nim
-# Linha 16 — caminho base das músicas
-let path = "D:/musica/no_celular"
+# Volume inicial (0 a 128)
+var volume: int = 96
 
-# Linha 19 — volume inicial (0 a 128)
-discard volumeMusic(96)
-
-# Linha 4 — modo aleatório ligado por padrão
-var aleat = true
+# Modo aleatório ligado por padrão
+var aleatorio: bool = true
 ```
 
 ---
